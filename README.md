@@ -99,18 +99,30 @@ WITH (FORMAT GDAL, DRIVER 'GeoJSON');
 
 ### Setup a nearby search server
 
-```bash
-cd poi-server;go build;cd ..
+1. Build binary:
+   ```bash
+   cd poi-server;go build;cd ..
+   ```
+2. Run:
+   ```bash
+   # Run for sample
+   ./poi-server/poi-server -places-file ./places.sample.geojson
 
-# Run for sample
-./poi-server/poi-server -places-file ./places.sample.geojson
+   # Run for Beijing
+   ./poi-server/poi-server -places-file ./places.beijing.geojson
 
-# Run for Beijing
-./poi-server/poi-server -places-file ./places.beijing.geojson
+   # Run for all, I don't have enough CPU&memory to run this
+   ./poi-server/poi-server -places-file ./places.geojson
+   ```
+3. Call API:
+   ```bash
+   curl "http://localhost:8888/nearby?lng=116.3529&lat=40.0008&count=50"
+   ```
+   Output:
 
-# Run for all, I don't have enough memory to run this
-./poi-server/poi-server -places-file ./places.geojson
-```
+   - Data: https://gist.github.com/ringsaturn/9f5de41a25937e4d7befb0eab907b76c
+   - Add to maps:
+     <http://geojson.io/#id=gist:ringsaturn/9f5de41a25937e4d7befb0eab907b76c>
 
 ## Admin
 
