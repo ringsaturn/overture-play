@@ -22,12 +22,44 @@ const (
 type Feature struct {
 	Type       string `json:"type"`
 	Properties struct {
-		Names struct {
+		ID         string `json:"id"`
+		UpdateTime string `json:"updatetime"`
+		Version    int    `json:"version"`
+		Names      struct {
 			Common []struct {
 				Value    string `json:"value"`
 				Language string `json:"language"`
 			} `json:"common"`
 		} `json:"names"`
+		Categories struct {
+			Main      string   `json:"main"`
+			Alternate []string `json:"alternate"`
+		} `json:"categories"`
+		Confidence float64  `json:"confidence"`
+		Websites   []string `json:"websites"`
+		Socials    []string `json:"socials"`
+		Emails     any      `json:"emails"`
+		Phones     []string `json:"phones"`
+		Brand      struct {
+			Names struct {
+				BrandNamesCommon []struct {
+					Value    string `json:"value"`
+					Language string `json:"language"`
+				} `json:"brand_names_common"`
+			} `json:"names"`
+			Wikidata any `json:"wikidata"`
+		} `json:"brand"`
+		Addresses []struct {
+			Locality string `json:"locality"`
+			Postcode string `json:"postcode"`
+			Freeform string `json:"freeform"`
+			Country  string `json:"country"`
+		} `json:"addresses"`
+		Sources []struct {
+			Dataset  string `json:"dataset"`
+			Property string `json:"property"`
+			RecordID string `json:"recordid"`
+		} `json:"sources"`
 	} `json:"properties"`
 	Geometry struct {
 		Type        string     `json:"type"`

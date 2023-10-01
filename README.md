@@ -93,7 +93,7 @@ SELECT
   ST_GeomFromWKB(geometry)
 from  read_parquet('type=place/*', filename=true, hive_partitioning=1)
 WHERE bbox.minX > 116.2908 and bbox.maxX < 116.5263 and bbox.minY>39.8555 and bbox.maxY<40.0219
-) TO 'places.geojson'
+) TO 'places.beijing.geojson'
 WITH (FORMAT GDAL, DRIVER 'GeoJSON');
 ```
 
