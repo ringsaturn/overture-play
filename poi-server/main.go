@@ -19,6 +19,13 @@ const (
 	featureCollectionType = "FeatureCollection"
 )
 
+// Wait upstream update all enums.
+//
+// See:
+//   - https://github.com/OvertureMaps/schema/blob/v0.4.0/schema/places/place.yaml#L26
+//   - https://github.com/OvertureMaps/schema/blob/main/task-force-docs/places/overture_categories.csv
+type Category string
+
 type Feature struct {
 	Type       string `json:"type"`
 	Properties struct {
@@ -32,8 +39,8 @@ type Feature struct {
 			} `json:"common"`
 		} `json:"names"`
 		Categories struct {
-			Main      string   `json:"main"`
-			Alternate []string `json:"alternate"`
+			Main      Category   `json:"main"`
+			Alternate []Category `json:"alternate"`
 		} `json:"categories"`
 		Confidence float64  `json:"confidence"`
 		Websites   []string `json:"websites"`
