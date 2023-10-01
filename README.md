@@ -3,7 +3,6 @@
 - [Have fun with Overture data.](#have-fun-with-overture-data)
   - [Prepare](#prepare)
   - [POI](#poi)
-    - [Count lines](#count-lines)
     - [Setup a nearby search server](#setup-a-nearby-search-server)
   - [Admin](#admin)
   - [References](#references)
@@ -27,9 +26,22 @@ aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-
 ```
 
 ```sql
-/* Covert to GeoJSON, about 12 GB */
 COPY (
-SELECT ST_GeomFromWkb(geometry) AS geometry, JSON(names) AS names
+SELECT 
+  id,
+  updatetime,
+  version,
+  CAST(names AS JSON) AS names,
+  CAST(categories AS JSON) AS categories,
+  confidence,
+  CAST(websites AS JSON) AS websites,
+  CAST(socials AS JSON) AS socials,
+  CAST(emails AS JSON) AS emails,
+  CAST(phones AS JSON) AS phones,
+  CAST(brand AS JSON) AS brand,
+  CAST(addresses AS JSON) AS addresses,
+  CAST(sources AS JSON) AS sources,
+  ST_GeomFromWKB(geometry)
 from  read_parquet('type=place/*', filename=true, hive_partitioning=1)
 ) TO 'places.geojson'
 WITH (FORMAT GDAL, DRIVER 'GeoJSON');
@@ -39,10 +51,24 @@ Cut a small piece of data for testing:
 
 ```sql
 COPY (
-SELECT ST_GeomFromWkb(geometry) AS geometry, JSON(names) AS names
-FROM  read_parquet('type=place/*', filename=true, hive_partitioning=1)
+SELECT 
+  id,
+  updatetime,
+  version,
+  CAST(names AS JSON) AS names,
+  CAST(categories AS JSON) AS categories,
+  confidence,
+  CAST(websites AS JSON) AS websites,
+  CAST(socials AS JSON) AS socials,
+  CAST(emails AS JSON) AS emails,
+  CAST(phones AS JSON) AS phones,
+  CAST(brand AS JSON) AS brand,
+  CAST(addresses AS JSON) AS addresses,
+  CAST(sources AS JSON) AS sources,
+  ST_GeomFromWKB(geometry)
+from  read_parquet('type=place/*', filename=true, hive_partitioning=1)
 WHERE bbox.minX > 5.1 and bbox.maxX < 5.2 and bbox.minY>52.1 and bbox.maxY<52.2
-) TO 'places.sample.geojson'
+) TO 'places.geojson'
 WITH (FORMAT GDAL, DRIVER 'GeoJSON');
 ```
 
@@ -50,23 +76,25 @@ Cut sample data set around Beijing:
 
 ```sql
 COPY (
-SELECT ST_GeomFromWkb(geometry) AS geometry, JSON(names) AS names
-FROM  read_parquet('type=place/*', filename=true, hive_partitioning=1)
+SELECT 
+  id,
+  updatetime,
+  version,
+  CAST(names AS JSON) AS names,
+  CAST(categories AS JSON) AS categories,
+  confidence,
+  CAST(websites AS JSON) AS websites,
+  CAST(socials AS JSON) AS socials,
+  CAST(emails AS JSON) AS emails,
+  CAST(phones AS JSON) AS phones,
+  CAST(brand AS JSON) AS brand,
+  CAST(addresses AS JSON) AS addresses,
+  CAST(sources AS JSON) AS sources,
+  ST_GeomFromWKB(geometry)
+from  read_parquet('type=place/*', filename=true, hive_partitioning=1)
 WHERE bbox.minX > 116.2908 and bbox.maxX < 116.5263 and bbox.minY>39.8555 and bbox.maxY<40.0219
-) TO 'places.beijing.geojson'
+) TO 'places.geojson'
 WITH (FORMAT GDAL, DRIVER 'GeoJSON');
-```
-
-### Count lines
-
-```bash
-wc -l places.geojson
-```
-
-Output as:
-
-```
-59175726
 ```
 
 ### Setup a nearby search server
@@ -80,7 +108,7 @@ cd poi-server;go build;cd ..
 # Run for Beijing
 ./poi-server/poi-server -places-file ./places.beijing.geojson
 
-# Run for all, cost at least 10min to load file, and need 16GB memory
+# Run for all, I don't have enough memory to run this
 ./poi-server/poi-server -places-file ./places.geojson
 ```
 
