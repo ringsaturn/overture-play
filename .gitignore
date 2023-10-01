@@ -1,3 +1,4 @@
 type*/
 *.geojson
 *.json
+poi-server/poi-server
