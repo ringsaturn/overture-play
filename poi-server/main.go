@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -90,13 +91,12 @@ func newFile(p string) *PlacesFile {
 	start := time.Now()
 	defer func() {
 		elapsed := time.Since(start)
-		println("initFile took", elapsed.String())
+		log.Println("initFile took", elapsed.String())
 	}()
 	jsonFile, err := os.ReadFile(p)
 	must(err)
 	f := &PlacesFile{}
-	err = sonic.Unmarshal(jsonFile, f)
-	must(err)
+	must(sonic.Unmarshal(jsonFile, f))
 	return f
 }
 
@@ -114,19 +114,6 @@ type NearbyRequest struct {
 	Count int     `query:"count" vd:"$>0 && $<=50"`
 }
 
-func bindAndValidate(ctx *app.RequestContext) (*NearbyRequest, error) {
-	q := &NearbyRequest{}
-	err := ctx.BindQuery(q)
-	if err != nil {
-		return nil, err
-	}
-	err = ctx.Validate(q)
-	if err != nil {
-		return nil, err
-	}
-	return q, nil
-}
-
 // NearbyResponse is a GeoJSON format result.
 type NearbyResponse struct {
 	Type     string     `json:"type"`
@@ -134,9 +121,10 @@ type NearbyResponse struct {
 	Features []*Feature `json:"features"`
 }
 
+// Searcher is a interface for searching nearby places.
 type Searcher interface {
-	Nearby(lng float64, lat float64, count int) []*Feature
 	Name() string
+	Nearby(lng float64, lat float64, count int) []*Feature
 }
 
 type searcher struct {
@@ -172,15 +160,33 @@ func (s *searcher) Nearby(lng float64, lat float64, count int) []*Feature {
 	return res
 }
 
+func bindAndValidate[T any](_ context.Context, ctx *app.RequestContext) (*T, error) {
+	q := new(T)
+	err := ctx.BindQuery(q)
+	if err != nil {
+		return nil, err
+	}
+	err = ctx.Validate(q)
+	if err != nil {
+		return nil, err
+	}
+	return q, nil
+}
+
+func handlerUnprocessableEntity(c context.Context, ctx *app.RequestContext, err error) {
+	ctx.JSON(http.StatusUnprocessableEntity, utils.H{
+		"error": err.Error(),
+		"query": string(ctx.Request.QueryString()),
+	})
+}
+
 func newServer(s Searcher, cfg ...config.Option) *server.Hertz {
 	h := server.New(cfg...)
 	h.GET("/nearby", func(c context.Context, ctx *app.RequestContext) {
-		q, err := bindAndValidate(ctx)
+		q, err := bindAndValidate[NearbyRequest](c, ctx)
 		if err != nil {
-			ctx.JSON(http.StatusUnprocessableEntity, utils.H{
-				"error": err.Error(),
-				"query": string(ctx.Request.QueryString()),
-			})
+			handlerUnprocessableEntity(c, ctx, err)
+			ctx.Abort()
 			return
 		}
 		ctx.JSON(http.StatusOK, &NearbyResponse{
