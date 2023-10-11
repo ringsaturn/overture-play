@@ -31,7 +31,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	res, _ := finder.FindOne(-122, 39)
+	res, _ := finder.FindAll(-122, 39)
 	resBytes, _ := json.Marshal(res)
 	fmt.Println(string(resBytes))
 }
