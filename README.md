@@ -21,6 +21,10 @@
 ## POI
 
 ```bash
+mkdir themes
+cd themes
+mkdir places
+cd places
 # Download POI data, about 8.6 GB
 aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-west-2/release/2023-07-26-alpha.0/theme=places/ .
 ```
@@ -127,6 +131,10 @@ WITH (FORMAT GDAL, DRIVER 'GeoJSON');
 ## Admin
 
 ```bash
+mkdir themes
+cd themes
+mkdir admins
+cd admins
 # Download admin data, about 600MB
 aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-west-2/release/2023-07-26-alpha.0/theme=admins/ .
 ```
