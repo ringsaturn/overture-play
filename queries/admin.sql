@@ -2,6 +2,7 @@ LOAD spatial;
 --- Process all
 COPY (
     SELECT type,
+        id,
         subType,
         localityType,
         adminLevel,
@@ -20,6 +21,7 @@ COPY (
 -- Process level 2
 COPY (
     SELECT type,
+        id,
         subType,
         localityType,
         adminLevel,
