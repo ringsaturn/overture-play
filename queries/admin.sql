@@ -6,6 +6,7 @@ COPY (
         localityType,
         adminLevel,
         isoCountryCodeAlpha2,
+        JSON(bbox) AS bbox,
         JSON(names) AS names,
         JSON(sources) AS sources,
         ST_GeomFromWkb(geometry) AS geometry
@@ -23,6 +24,7 @@ COPY (
         localityType,
         adminLevel,
         isoCountryCodeAlpha2,
+        JSON(bbox) AS bbox,
         JSON(names) AS names,
         JSON(sources) AS sources,
         ST_GeomFromWkb(geometry) AS geometry
