@@ -138,11 +138,8 @@ Output:
 ## Admin
 
 ```bash
-mkdir themes
-cd themes
-mkdir admins
-cd admins
-# Download admin data, about 600MB
+mkdir -p themes/admins
+
 aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-west-2/release/2023-10-19-alpha.0/theme=admins/ .
 ```
 
