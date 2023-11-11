@@ -5,6 +5,7 @@
   - [POI](#poi)
     - [Setup a nearby search server](#setup-a-nearby-search-server)
   - [Admin](#admin)
+    - [Setup a adcode query server](#setup-a-adcode-query-server)
   - [References](#references)
 
 ## Prepare
@@ -26,7 +27,7 @@ cd themes
 mkdir places
 cd places
 # Download POI data, about 8.6 GB
-aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-west-2/release/2023-07-26-alpha.0/theme=places/ .
+aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-west-2/release/2023-10-19-alpha.0/theme=places/ .
 ```
 
 ```sql
@@ -103,30 +104,36 @@ WITH (FORMAT GDAL, DRIVER 'GeoJSON');
 
 ### Setup a nearby search server
 
-1. Build binary:
-   ```bash
-   cd poi-server;go build;cd ..
-   ```
-2. Run:
-   ```bash
-   # Run for sample
-   ./poi-server/poi-server -places-file ./places.sample.geojson
+Build binary:
 
-   # Run for Beijing
-   ./poi-server/poi-server -places-file ./places.beijing.geojson
+```bash
+cd poi-server;go build;cd ..
+```
 
-   # Run for all, I don't have enough CPU&memory to run this
-   ./poi-server/poi-server -places-file ./places.geojson
-   ```
-3. Call API:
-   ```bash
-   curl "http://localhost:8888/nearby?lng=116.3529&lat=40.0008&count=50"
-   ```
-   Output:
+Run:
 
-   - Data: https://gist.github.com/ringsaturn/9f5de41a25937e4d7befb0eab907b76c
-   - Add to maps:
-     <http://geojson.io/#id=gist:ringsaturn/9f5de41a25937e4d7befb0eab907b76c>
+```bash
+# Run for sample
+./poi-server/poi-server -places-file ./places.sample.geojson
+
+# Run for Beijing
+./poi-server/poi-server -places-file ./places.beijing.geojson
+
+# Run for all, I don't have enough CPU&memory to run this
+./poi-server/poi-server -places-file ./themes/places/places.geojson
+```
+
+Call API:
+
+```bash
+curl "http://localhost:8888/nearby?lng=116.3529&lat=40.0008&count=50"
+```
+
+Output:
+
+- Data: https://gist.github.com/ringsaturn/9f5de41a25937e4d7befb0eab907b76c
+- Add to maps:
+  <http://geojson.io/#id=gist:ringsaturn/9f5de41a25937e4d7befb0eab907b76c>
 
 ## Admin
 
@@ -136,7 +143,7 @@ cd themes
 mkdir admins
 cd admins
 # Download admin data, about 600MB
-aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-west-2/release/2023-07-26-alpha.0/theme=admins/ .
+aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-west-2/release/2023-10-19-alpha.0/theme=admins/ .
 ```
 
 ```sql
@@ -155,6 +162,256 @@ COPY (
        AND ST_GeometryType(ST_GeomFromWkb(geometry)) IN ('POLYGON','MULTIPOLYGON')
 ) TO 'countries.geojson'
 WITH (FORMAT GDAL, DRIVER 'GeoJSON');
+```
+
+### Setup a adcode query server
+
+```bash
+cd admin-server;go build;cd ..
+./admin-server/admin-server -admin-file themes/admins/countries.geojson
+```
+
+```bash
+curl http://localhost:8888/admin?lng=-77.0391101&lat=38.8976763
+```
+
+Output:
+
+```json
+{
+  "data": [
+    {
+      "adminlevel": 4,
+      "isocountrycodealpha2": null,
+      "localitytype": "state",
+      "names": {
+        "common": [
+          { "language": "local", "value": "District of Columbia" },
+          { "language": "en-Latn", "value": "District of Columbia" }
+        ]
+      },
+      "sources": [{ "dataset": "TomTom", "property": "" }],
+      "subtype": "administrativeLocality",
+      "type": "locality"
+    },
+    {
+      "adminlevel": 2,
+      "isocountrycodealpha2": "US",
+      "localitytype": "country",
+      "names": {
+        "common": [
+          { "language": "local", "value": "United States" },
+          { "language": "en-Latn", "value": "United States" },
+          { "language": "en", "value": "United States" },
+          { "language": "nl", "value": "United States" },
+          { "language": "es", "value": "Estados Unidos" },
+          { "language": "pt", "value": "Estados Unidos" },
+          { "language": "pt-BR", "value": "Estados Unidos" },
+          { "language": "fr", "value": "États-Unis" },
+          { "language": "de", "value": "Vereinigte Staaten von Amerika" },
+          { "language": "ru", "value": "США" },
+          { "language": "it", "value": "Stati Uniti" },
+          { "language": "ar", "value": "الولايات المتحدة" },
+          { "language": "bg", "value": "САЩ" },
+          { "language": "bs", "value": "SAD" },
+          { "language": "hr", "value": "SAD" },
+          { "language": "ca", "value": "Estats Units" },
+          { "language": "cs", "value": "Spojené státy" },
+          { "language": "da", "value": "USA" },
+          { "language": "no", "value": "USA" },
+          { "language": "sv", "value": "USA" },
+          { "language": "el", "value": "Ηνωμένες Πολιτείες" },
+          { "language": "et", "value": "Ameerika Ühendriigid" },
+          { "language": "fi", "value": "Yhdysvallat" },
+          { "language": "he", "value": "ארצות הברית" },
+          { "language": "hu", "value": "Egyesült Államok" },
+          { "language": "id", "value": "Amerika Serikat" },
+          { "language": "ja", "value": "アメリカ合衆国" },
+          { "language": "ko", "value": "미국" },
+          { "language": "lt", "value": "JAV" },
+          { "language": "lv", "value": "Amerikas Savienotās valstis" },
+          { "language": "pl", "value": "Stany Zjednoczone" },
+          { "language": "pt-PT", "value": "Estados Unidos da América" },
+          { "language": "ro", "value": "Statele Unite" },
+          { "language": "sk", "value": "\"Spojené štáty, USA\"" },
+          { "language": "sl", "value": "Združene države Amerike" },
+          { "language": "sr-Latn", "value": "Sjedinjene Američke Države" },
+          { "language": "th", "value": "สหรัฐอเมริกา" },
+          { "language": "tr", "value": "Amerika Birleşik Devletleri" },
+          { "language": "uk", "value": "Сполучені Штати Америки" },
+          { "language": "vi", "value": "Mỹ" },
+          { "language": "zh-Hans", "value": "美国" },
+          { "language": "zh-Hant", "value": "美國" }
+        ]
+      },
+      "sources": [
+        { "dataset": "TomTom", "property": "" },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/2"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/3"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/4"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/5"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/6"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/7"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/8"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/9"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/10"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/11"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/12"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/13"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/14"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/15"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/16"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/17"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/18"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/19"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/20"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/21"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/22"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/23"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/24"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/25"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/26"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/27"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/28"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/29"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/30"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/31"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/32"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/33"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/34"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/35"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/36"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/37"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/38"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/39"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/40"
+        },
+        {
+          "dataset": "Esri Community Maps",
+          "property": "/properties/names/common/41"
+        }
+      ],
+      "subtype": "administrativeLocality",
+      "type": "locality"
+    }
+  ]
+}
 ```
 
 ## References
