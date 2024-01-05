@@ -140,24 +140,57 @@ Output:
 ```bash
 mkdir -p themes/admins
 
-aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-west-2/release/2023-10-19-alpha.0/theme=admins/ .
+aws s3 cp --recursive --region us-west-2 --no-sign-request s3://overturemaps-us-west-2/release/2023-12-14-alpha.0/theme=admins/ .
 ```
 
 ```sql
+LOAD spatial;
+
+CREATE VIEW admins_view AS SELECT * FROM read_parquet('./type=*/*', filename=true, hive_partitioning=1);
+
 COPY (
     SELECT
-           type,
-           subType,
-           localityType,
-           adminLevel,
-           isoCountryCodeAlpha2,
-           JSON(names) AS names,
-           JSON(sources) AS sources,
-           ST_GeomFromWkb(geometry) AS geometry
-      FROM read_parquet('./type=*/*', filename=true, hive_partitioning=1)
-     WHERE adminLevel = 2
-       AND ST_GeometryType(ST_GeomFromWkb(geometry)) IN ('POLYGON','MULTIPOLYGON')
-) TO 'countries.geojson'
+            admins.id,
+            admins.subType,
+            admins.adminLevel,
+            admins.isoCountryCodeAlpha2,
+            JSON(admins.bbox) AS bbox,
+            JSON(admins.names) AS names,
+            JSON(admins.sources) AS sources,
+            areas.areaId,
+            ST_GeomFromWKB(areas.areaGeometry) as geometry
+    FROM admins_view AS admins
+    INNER JOIN (
+        SELECT 
+            id as areaId, 
+            localityId, 
+            geometry AS areaGeometry
+        FROM admins_view
+    ) AS areas ON areas.localityId == admins.id
+) TO 'admins.geojson'
+WITH (FORMAT GDAL, DRIVER 'GeoJSON');
+
+COPY (
+    SELECT
+            admins.id,
+            admins.subType,
+            admins.adminLevel,
+            admins.isoCountryCodeAlpha2,
+            JSON(admins.bbox) AS bbox,
+            JSON(admins.names) AS names,
+            JSON(admins.sources) AS sources,
+            areas.areaId,
+            ST_GeomFromWKB(areas.areaGeometry) as geometry
+    FROM admins_view AS admins
+    INNER JOIN (
+        SELECT 
+            id as areaId, 
+            localityId, 
+            geometry AS areaGeometry
+        FROM admins_view
+    ) AS areas ON areas.localityId == admins.id
+    WHERE admins.adminLevel == 10
+) TO 'admins_lv10.geojson'
 WITH (FORMAT GDAL, DRIVER 'GeoJSON');
 ```
 
